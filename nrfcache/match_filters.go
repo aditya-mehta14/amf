@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 Open Networking Foundation <info@opennetworking.org>
+// SPDX-FileCopyrightText: 2022 Infosys Limited
 // Copyright 2019 free5GC.org
 //
 // SPDX-License-Identifier: Apache-2.0
@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"github.com/omec-project/openapi/Nnrf_NFDiscovery"
 	"github.com/omec-project/openapi/models"
+	"regexp"
 )
 
 type MatchFilter func(profile *models.NfProfile, opts *Nnrf_NFDiscovery.SearchNFInstancesParamOpts) bool
@@ -27,34 +28,21 @@ var matchFilters = MatchFilters{
 
 func MatchSmfProfile(profile *models.NfProfile, opts *Nnrf_NFDiscovery.SearchNFInstancesParamOpts) bool {
 
-	matchFound := false
+	matchFound := true
 
-	// validate dnn
-	if opts.Dnn.IsSet() {
-		if profile.SmfInfo != nil && profile.SmfInfo.SNssaiSmfInfoList != nil {
-			for _, s := range *profile.SmfInfo.SNssaiSmfInfoList {
-				for _, d := range *s.DnnSmfInfoList {
-					if d.Dnn == opts.Dnn.Value() {
-						matchFound = true
-						break
-					}
-				}
-			}
-		}
-	}
-
-	if matchFound && opts.ServiceNames.IsSet() {
+	if opts.ServiceNames.IsSet() {
 		reqServiceNames := opts.ServiceNames.Value().([]models.ServiceName)
 		matchCount := 0
 		for _, sn := range reqServiceNames {
-			for _, psn := range *profile.NfServices {
-				if psn.ServiceName == sn {
+			for i := 0; i < len(*profile.NfServices); i++ {
+				if (*profile.NfServices)[i].ServiceName == sn {
 					matchCount++
+					break
 				}
 			}
 		}
 
-		if matchCount != len(reqServiceNames) {
+		if matchCount == 0 {
 			matchFound = false
 		}
 	}
@@ -70,25 +58,78 @@ func MatchSmfProfile(profile *models.NfProfile, opts *Nnrf_NFDiscovery.SearchNFI
 				return false
 			}
 
-			for _, snssaiInfoItem := range *profile.SmfInfo.SNssaiSmfInfoList {
-				if *snssaiInfoItem.SNssai == snssai {
-					matchCount++
+			// Snssai in the smfInfo has priority
+			if profile.SmfInfo != nil && profile.SmfInfo.SNssaiSmfInfoList != nil {
+				for _, s := range *profile.SmfInfo.SNssaiSmfInfoList {
+					if s.SNssai != nil && (*s.SNssai) == snssai {
+						matchCount++
+					}
+				}
+			} else if profile.AllowedNssais != nil {
+				for _, s := range *profile.AllowedNssais {
+					if s == snssai {
+						matchCount++
+					}
 				}
 			}
 
 		}
 
-		if matchCount != len(reqSnssais) {
+		// if at least one matching snssai has been found
+		if matchCount == 0 {
 			matchFound = false
 		}
 
+	}
+
+	// validate dnn
+	if matchFound && opts.Dnn.IsSet() {
+		// if a dnn is provided by the upper layer, check for the exact match
+		// or wild card match
+		dnnMatched := false
+
+		if profile.SmfInfo != nil && profile.SmfInfo.SNssaiSmfInfoList != nil {
+		matchDnnLoop:
+			for _, s := range *profile.SmfInfo.SNssaiSmfInfoList {
+				if s.DnnSmfInfoList != nil {
+					for _, d := range *s.DnnSmfInfoList {
+						if d.Dnn == opts.Dnn.Value() || d.Dnn == "*" {
+							dnnMatched = true
+							break matchDnnLoop
+						}
+					}
+				}
+			}
+		}
+		matchFound = dnnMatched
 	}
 
 	return matchFound
 }
 
 func MatchAusfProfile(profile *models.NfProfile, opts *Nnrf_NFDiscovery.SearchNFInstancesParamOpts) bool {
-	return true
+	matchFound := true
+	if opts.Supi.IsSet() {
+		if profile.AusfInfo != nil && len(profile.AusfInfo.SupiRanges) > 0 {
+			matchCount := 0
+			for _, s := range profile.AusfInfo.SupiRanges {
+				if len(s.Pattern) > 0 {
+					r, _ := regexp.Compile(s.Pattern)
+					if r.MatchString(opts.Supi.Value()) {
+						matchCount++
+					}
+
+				} else if s.Start <= opts.Supi.Value() && opts.Supi.Value() < s.End {
+					matchCount++
+				}
+			}
+
+			if matchCount == 0 {
+				matchFound = false
+			}
+		}
+	}
+	return matchFound
 }
 
 func MatchNssfProfile(profile *models.NfProfile, opts *Nnrf_NFDiscovery.SearchNFInstancesParamOpts) bool {
@@ -100,9 +141,51 @@ func MatchAmfProfile(profile *models.NfProfile, opts *Nnrf_NFDiscovery.SearchNFI
 }
 
 func MatchPcfProfile(profile *models.NfProfile, opts *Nnrf_NFDiscovery.SearchNFInstancesParamOpts) bool {
-	return true
+	matchFound := true
+	if opts.Supi.IsSet() {
+		if profile.AusfInfo != nil && len(profile.AusfInfo.SupiRanges) > 0 {
+			matchCount := 0
+			for _, s := range profile.AusfInfo.SupiRanges {
+				if len(s.Pattern) > 0 {
+					r, _ := regexp.Compile(s.Pattern)
+					if r.MatchString(opts.Supi.Value()) {
+						matchCount++
+					}
+
+				} else if s.Start <= opts.Supi.Value() && opts.Supi.Value() < s.End {
+					matchCount++
+				}
+			}
+
+			if matchCount == 0 {
+				matchFound = false
+			}
+		}
+	}
+	return matchFound
 }
 
 func MatchUdmProfile(profile *models.NfProfile, opts *Nnrf_NFDiscovery.SearchNFInstancesParamOpts) bool {
-	return true
+	matchFound := true
+	if opts.Supi.IsSet() {
+		if profile.AusfInfo != nil && len(profile.AusfInfo.SupiRanges) > 0 {
+			matchCount := 0
+			for _, s := range profile.AusfInfo.SupiRanges {
+				if len(s.Pattern) > 0 {
+					r, _ := regexp.Compile(s.Pattern)
+					if r.MatchString(opts.Supi.Value()) {
+						matchCount++
+					}
+
+				} else if s.Start <= opts.Supi.Value() && opts.Supi.Value() < s.End {
+					matchCount++
+				}
+			}
+
+			if matchCount == 0 {
+				matchFound = false
+			}
+		}
+	}
+	return matchFound
 }

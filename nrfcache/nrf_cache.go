@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 Open Networking Foundation <info@opennetworking.org>
+// SPDX-FileCopyrightText: 2022 Infosys Limited
 // Copyright 2019 free5GC.org
 //
 // SPDX-License-Identifier: Apache-2.0
