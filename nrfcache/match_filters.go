@@ -144,29 +144,33 @@ func MatchAmfProfile(profile *models.NfProfile, opts *Nnrf_NFDiscovery.SearchNFI
 	matchCount := 0
 
 	if opts.TargetPlmnList.IsSet() {
-		for _, plmn := range *profile.PlmnList {
-			if plmn == opts.TargetPlmnList.Value().(models.PlmnId) {
-				matchCount++
-			}
-		}
-	}
-
-	if profile.AmfInfo != nil {
-		if opts.Guami.IsSet() {
-			for _, guami := range *profile.AmfInfo.GuamiList {
-				if guami == opts.Guami.Value().(models.Guami) {
+		if profile.PlmnList != nil {
+			for _, plmn := range *profile.PlmnList {
+				if plmn == opts.TargetPlmnList.Value().(models.PlmnId) {
 					matchCount++
 				}
 			}
 		}
-		if opts.AmfRegionId.IsSet() {
-			if profile.AmfInfo.AmfRegionId == opts.AmfRegionId.Value() {
-				matchCount++
+	} else if profile.AmfInfo != nil {
+		if opts.Guami.IsSet() {
+			if profile.AmfInfo.GuamiList != nil {
+				for _, guami := range *profile.AmfInfo.GuamiList {
+					if guami == opts.Guami.Value().(models.Guami) {
+						matchCount++
+					}
+				}
 			}
-		}
-		if opts.AmfSetId.IsSet() {
-			if profile.AmfInfo.AmfSetId == opts.AmfSetId.Value() {
-				matchCount++
+		} else if opts.AmfRegionId.IsSet() {
+			if len(profile.AmfInfo.AmfRegionId) > 0 {
+				if profile.AmfInfo.AmfRegionId == opts.AmfRegionId.Value() {
+					matchCount++
+				}
+			}
+		} else if opts.AmfSetId.IsSet() {
+			if len(profile.AmfInfo.AmfSetId) > 0 {
+				if profile.AmfInfo.AmfSetId == opts.AmfSetId.Value() {
+					matchCount++
+				}
 			}
 		}
 	}
