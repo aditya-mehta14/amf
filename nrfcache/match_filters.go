@@ -144,14 +144,13 @@ func MatchNssfProfile(profile *models.NfProfile, opts *Nnrf_NFDiscovery.SearchNF
 
 func MatchAmfProfile(profile *models.NfProfile, opts *Nnrf_NFDiscovery.SearchNFInstancesParamOpts) bool {
 
-	matchFound := true
-	matchCount := 0
+	matchFound := false
 
 	if opts.TargetPlmnList.IsSet() {
 		if profile.PlmnList != nil {
 			for _, plmn := range *profile.PlmnList {
 				if plmn == opts.TargetPlmnList.Value().(models.PlmnId) {
-					matchCount++
+					matchFound = true
 				}
 			}
 		}
@@ -160,27 +159,23 @@ func MatchAmfProfile(profile *models.NfProfile, opts *Nnrf_NFDiscovery.SearchNFI
 			if profile.AmfInfo.GuamiList != nil {
 				for _, guami := range *profile.AmfInfo.GuamiList {
 					if guami == opts.Guami.Value().(models.Guami) {
-						matchCount++
+						matchFound = true
 					}
 				}
 			}
 		} else if opts.AmfRegionId.IsSet() {
 			if len(profile.AmfInfo.AmfRegionId) > 0 {
 				if profile.AmfInfo.AmfRegionId == opts.AmfRegionId.Value() {
-					matchCount++
+					matchFound = true
 				}
 			}
 		} else if opts.AmfSetId.IsSet() {
 			if len(profile.AmfInfo.AmfSetId) > 0 {
 				if profile.AmfInfo.AmfSetId == opts.AmfSetId.Value() {
-					matchCount++
+					matchFound = true
 				}
 			}
 		}
-	}
-
-	if matchCount == 0 {
-		matchFound = false
 	}
 
 	logger.UtilLog.Infoln("Amf match found = %v", matchFound)
