@@ -154,7 +154,8 @@ func MatchAmfProfile(profile *models.NfProfile, opts *Nnrf_NFDiscovery.SearchNFI
 				}
 			}
 		}
-	} else if profile.AmfInfo != nil {
+	}
+	if profile.AmfInfo != nil {
 		if opts.Guami.IsSet() {
 			if profile.AmfInfo.GuamiList != nil {
 				for _, guami := range *profile.AmfInfo.GuamiList {
@@ -163,13 +164,15 @@ func MatchAmfProfile(profile *models.NfProfile, opts *Nnrf_NFDiscovery.SearchNFI
 					}
 				}
 			}
-		} else if opts.AmfRegionId.IsSet() {
+		}
+		if opts.AmfRegionId.IsSet() {
 			if len(profile.AmfInfo.AmfRegionId) > 0 {
 				if profile.AmfInfo.AmfRegionId == opts.AmfRegionId.Value() {
 					matchFound = true
 				}
 			}
-		} else if opts.AmfSetId.IsSet() {
+		}
+		if opts.AmfSetId.IsSet() {
 			if len(profile.AmfInfo.AmfSetId) > 0 {
 				if profile.AmfInfo.AmfSetId == opts.AmfSetId.Value() {
 					matchFound = true
