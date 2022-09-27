@@ -144,41 +144,72 @@ func MatchNssfProfile(profile *models.NfProfile, opts *Nnrf_NFDiscovery.SearchNF
 
 func MatchAmfProfile(profile *models.NfProfile, opts *Nnrf_NFDiscovery.SearchNFInstancesParamOpts) bool {
 
-	matchFound := false
+	matchFound := true
 
 	if opts.TargetPlmnList.IsSet() {
-		if profile.PlmnList != nil {
-			for _, plmn := range *profile.PlmnList {
-				if plmn == opts.TargetPlmnList.Value().(models.PlmnId) {
-					matchFound = true
-				}
+		targetPlmnList := opts.TargetPlmnList.Value().([]string)
+
+		for _, targetPlmn := range targetPlmnList {
+			var plmn models.PlmnId
+			err := json.Unmarshal([]byte(targetPlmn), &plmn)
+
+			if err != nil {
+				return false
 			}
-		}
-	}
-	if profile.AmfInfo != nil {
-		if opts.Guami.IsSet() {
-			if profile.AmfInfo.GuamiList != nil {
-				for _, guami := range *profile.AmfInfo.GuamiList {
-					if guami == opts.Guami.Value().(models.Guami) {
+
+			if profile.PlmnList != nil {
+				for _, profilePlmn := range *profile.PlmnList {
+					if profilePlmn == plmn {
 						matchFound = true
 					}
 				}
 			}
 		}
-		if opts.AmfRegionId.IsSet() {
+	}
+	if matchFound && profile.AmfInfo != nil {
+		guamiFound := false
+		regionIdFound := false
+		setIdFound := false
+
+		if opts.Guami.IsSet() {
+			guamiList := opts.Guami.Value().([]string)
+
+			for _, guami := range guamiList {
+				var guamiOpt models.Guami
+				err := json.Unmarshal([]byte(guami), &guamiOpt)
+
+				if err != nil {
+					return false
+				}
+
+				if profile.AmfInfo.GuamiList != nil {
+					for _, guami := range *profile.AmfInfo.GuamiList {
+						if guamiOpt == guami {
+							guamiFound = true
+						}
+					}
+				}
+			}
+			matchFound = guamiFound
+		}
+
+		if matchFound && opts.AmfRegionId.IsSet() {
 			if len(profile.AmfInfo.AmfRegionId) > 0 {
 				if profile.AmfInfo.AmfRegionId == opts.AmfRegionId.Value() {
-					matchFound = true
+					regionIdFound = true
 				}
 			}
+			matchFound = regionIdFound
 		}
-		if opts.AmfSetId.IsSet() {
+
+		if matchFound && opts.AmfSetId.IsSet() {
 			if len(profile.AmfInfo.AmfSetId) > 0 {
 				if profile.AmfInfo.AmfSetId == opts.AmfSetId.Value() {
-					matchFound = true
+					setIdFound = true
 				}
 			}
 		}
+		matchFound = setIdFound
 	}
 
 	logger.UtilLog.Infoln("Amf match found = %v", matchFound)
