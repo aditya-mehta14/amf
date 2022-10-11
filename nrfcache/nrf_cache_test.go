@@ -8,14 +8,15 @@ package nrf_cache
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/antihax/optional"
-	"github.com/omec-project/amf/util"
-	"github.com/omec-project/openapi/Nnrf_NFDiscovery"
-	"github.com/omec-project/openapi/models"
 	"strings"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/antihax/optional"
+	"github.com/omec-project/amf/util"
+	"github.com/omec-project/openapi/Nnrf_NFDiscovery"
+	"github.com/omec-project/openapi/models"
 )
 
 var nfProfilesDb map[string]string
@@ -364,6 +365,369 @@ func init() {
 			"groupId": "ausfGroup001"
 		  }
 		}`
+
+	nfProfilesDb["AMF-01"] = `{ "nfServices" : [
+		{
+		"serviceInstanceId" : "0", 
+		"serviceName" : "namf-comm", 
+		"versions" : [ 
+			{ 
+				"apiVersionInUri" : "v1", 
+				"apiFullVersion" : "1.0.0" 
+			}
+		],
+		"scheme" : "http",
+		"nfServiceStatus" : "REGISTERED",
+		"ipEndPoints" : [
+			{ 
+			"ipv4Address" : "amf",
+			"transport" : "TCP",
+			"port" : 29518
+			} 
+		],
+		"apiPrefix" : "http://amf:29518" 
+		}, 
+		{ 
+		"versions" : [
+			{ 
+			"apiVersionInUri" : "v1",
+			"apiFullVersion" : "1.0.0" } ],
+			"scheme" : "http", 
+			"nfServiceStatus" : "REGISTERED",
+			"ipEndPoints" : [ 
+				{ 
+				"ipv4Address" : "amf",
+				"transport" : "TCP",
+				"port" : 29518
+				} 
+			],
+		"apiPrefix" : "http://amf:29518", 
+		"serviceInstanceId" : "1",
+		"serviceName" : "namf-evts" 
+		},
+		{
+		"apiPrefix" : "http://amf:29518", 
+		"serviceInstanceId" : "2", 
+		"serviceName" : "namf-mt", 
+		"versions" : [ 
+		{ 
+		"apiVersionInUri" : "v1",
+		"apiFullVersion" : "1.0.0"
+		} 
+		],
+		"scheme" : "http",
+		"nfServiceStatus" : "REGISTERED",
+		"ipEndPoints" : [ 
+		{ 
+		"ipv4Address" : "amf", 
+		"transport" : "TCP",
+		"port" : 29518 
+		} 
+		] 
+		}, 
+		{
+		"serviceInstanceId" : "3",
+		"serviceName" : "namf-loc", 
+		"versions" : [
+			{
+				"apiVersionInUri" : "v1",
+				"apiFullVersion" : "1.0.0"
+			} 
+		], 
+		"scheme" : "http", 
+		"nfServiceStatus" : "REGISTERED",
+		"ipEndPoints" : [ 
+			{ 
+				"ipv4Address" : "amf",
+				"transport" : "TCP",
+				"port" : 29518
+			} 
+		],
+		"apiPrefix" : "http://amf:29518"
+		}, 
+		{
+		"serviceInstanceId" : "4", 
+		"serviceName" : "namf-oam",
+		"versions" : [
+			{
+				"apiVersionInUri" : "v1"'
+				"apiFullVersion" : "1.0.0"
+			} 
+		],
+		"scheme" : "http", 
+		"nfServiceStatus" : "REGISTERED",
+		"ipEndPoints" : [
+			{
+				"ipv4Address" : "amf",
+				"transport" : "TCP",
+				"port" : 29518
+			}
+		],
+		"apiPrefix" : "http://amf:29518"
+		} ],
+		"nfInstanceId" : "9f7d5a3f-88ab-4525-b31e-334da7faedab",
+		"nfType" : "AMF",
+		"nfStatus" : "REGISTERED",
+		"plmnList" : [ { "mcc" : "208", "mnc" : "93" } , { "mcc" : "209", "mnc" : "94" } ],
+		"sNssais" : [ { "sst" : 1, "sd" : "010203" } ],
+		"ipv4Addresses" : [ "amf" ], 
+		"amfInfo" : { 
+		"amfSetId" : "3f8",
+		"amfRegionId" : "ca",
+		"guamiList" : [ 
+			{ 
+				"plmnId" : { "mcc" : "208", "mnc" : "93" },
+				"amfId" : "cafe00" } ],
+		"taiList" : [ 
+			{ 
+				"plmnId" : { "mcc" : "208", "mnc" : "93" }, 
+				"tac" : "1"
+			} 
+		] 
+		} 
+		}`
+
+	nfProfilesDb["AMF-02"] = `{ "nfServices" : [
+			{
+			"serviceInstanceId" : "0", 
+			"serviceName" : "namf-comm", 
+			"versions" : [ 
+				{ 
+					"apiVersionInUri" : "v1", 
+					"apiFullVersion" : "1.0.0" 
+				}
+			],
+			"scheme" : "http",
+			"nfServiceStatus" : "REGISTERED",
+			"ipEndPoints" : [
+				{ 
+				"ipv4Address" : "amf",
+				"transport" : "TCP",
+				"port" : 29518
+				} 
+			],
+			"apiPrefix" : "http://amf:29518" 
+			}, 
+			{ 
+			"versions" : [
+				{ 
+				"apiVersionInUri" : "v1",
+				"apiFullVersion" : "1.0.0" } ],
+				"scheme" : "http", 
+				"nfServiceStatus" : "REGISTERED",
+				"ipEndPoints" : [ 
+					{ 
+					"ipv4Address" : "amf",
+					"transport" : "TCP",
+					"port" : 29518
+					} 
+				],
+			"apiPrefix" : "http://amf:29518", 
+			"serviceInstanceId" : "1",
+			"serviceName" : "namf-evts" 
+			},
+			{
+			"apiPrefix" : "http://amf:29518", 
+			"serviceInstanceId" : "2", 
+			"serviceName" : "namf-mt", 
+			"versions" : [ 
+			{ 
+			"apiVersionInUri" : "v1",
+			"apiFullVersion" : "1.0.0"
+			} 
+			],
+			"scheme" : "http",
+			"nfServiceStatus" : "REGISTERED",
+			"ipEndPoints" : [ 
+			{ 
+			"ipv4Address" : "amf", 
+			"transport" : "TCP",
+			"port" : 29518 
+			} 
+			] 
+			}, 
+			{
+			"serviceInstanceId" : "3",
+			"serviceName" : "namf-loc", 
+			"versions" : [
+				{
+					"apiVersionInUri" : "v1",
+					"apiFullVersion" : "1.0.0"
+				} 
+			], 
+			"scheme" : "http", 
+			"nfServiceStatus" : "REGISTERED",
+			"ipEndPoints" : [ 
+				{ 
+					"ipv4Address" : "amf",
+					"transport" : "TCP",
+					"port" : 29518
+				} 
+			],
+			"apiPrefix" : "http://amf:29518"
+			}, 
+			{
+			"serviceInstanceId" : "4", 
+			"serviceName" : "namf-oam",
+			"versions" : [
+				{
+					"apiVersionInUri" : "v1"'
+					"apiFullVersion" : "1.0.0"
+				} 
+			],
+			"scheme" : "http", 
+			"nfServiceStatus" : "REGISTERED",
+			"ipEndPoints" : [
+				{
+					"ipv4Address" : "amf",
+					"transport" : "TCP",
+					"port" : 29518
+				}
+			],
+			"apiPrefix" : "http://amf:29518"
+			} ],
+			"nfInstanceId" : "9f7d5a3f-88ab-4525-b31e-334da7faedab",
+			"nfType" : "AMF",
+			"nfStatus" : "REGISTERED",
+			"plmnList" : [ { "mcc" : "208", "mnc" : "93" } ],
+			"sNssais" : [ { "sst" : 1, "sd" : "010203" } ],
+			"ipv4Addresses" : [ "amf" ], 
+			"amfInfo" : { 
+			"amfSetId" : "",
+			"amfRegionId" : "",
+			"guamiList" : [ 
+				{ 
+					"plmnId" : { "mcc" : "208", "mnc" : "93" },
+					"amfId" : "cafe00" } ],
+			"taiList" : [ 
+				{ 
+					"plmnId" : { "mcc" : "208", "mnc" : "93" }, 
+					"tac" : "1"
+				} 
+			] 
+			} 
+			}`
+
+	nfProfilesDb["AMF-03"] = `{ "nfServices" : [
+				{
+				"serviceInstanceId" : "0", 
+				"serviceName" : "namf-comm", 
+				"versions" : [ 
+					{ 
+						"apiVersionInUri" : "v1", 
+						"apiFullVersion" : "1.0.0" 
+					}
+				],
+				"scheme" : "http",
+				"nfServiceStatus" : "REGISTERED",
+				"ipEndPoints" : [
+					{ 
+					"ipv4Address" : "amf",
+					"transport" : "TCP",
+					"port" : 29518
+					} 
+				],
+				"apiPrefix" : "http://amf:29518" 
+				}, 
+				{ 
+				"versions" : [
+					{ 
+					"apiVersionInUri" : "v1",
+					"apiFullVersion" : "1.0.0" } ],
+					"scheme" : "http", 
+					"nfServiceStatus" : "REGISTERED",
+					"ipEndPoints" : [ 
+						{ 
+						"ipv4Address" : "amf",
+						"transport" : "TCP",
+						"port" : 29518
+						} 
+					],
+				"apiPrefix" : "http://amf:29518", 
+				"serviceInstanceId" : "1",
+				"serviceName" : "namf-evts" 
+				},
+				{
+				"apiPrefix" : "http://amf:29518", 
+				"serviceInstanceId" : "2", 
+				"serviceName" : "namf-mt", 
+				"versions" : [ 
+				{ 
+				"apiVersionInUri" : "v1",
+				"apiFullVersion" : "1.0.0"
+				} 
+				],
+				"scheme" : "http",
+				"nfServiceStatus" : "REGISTERED",
+				"ipEndPoints" : [ 
+				{ 
+				"ipv4Address" : "amf", 
+				"transport" : "TCP",
+				"port" : 29518 
+				} 
+				] 
+				}, 
+				{
+				"serviceInstanceId" : "3",
+				"serviceName" : "namf-loc", 
+				"versions" : [
+					{
+						"apiVersionInUri" : "v1",
+						"apiFullVersion" : "1.0.0"
+					} 
+				], 
+				"scheme" : "http", 
+				"nfServiceStatus" : "REGISTERED",
+				"ipEndPoints" : [ 
+					{ 
+						"ipv4Address" : "amf",
+						"transport" : "TCP",
+						"port" : 29518
+					} 
+				],
+				"apiPrefix" : "http://amf:29518"
+				}, 
+				{
+				"serviceInstanceId" : "4", 
+				"serviceName" : "namf-oam",
+				"versions" : [
+					{
+						"apiVersionInUri" : "v1"'
+						"apiFullVersion" : "1.0.0"
+					} 
+				],
+				"scheme" : "http", 
+				"nfServiceStatus" : "REGISTERED",
+				"ipEndPoints" : [
+					{
+						"ipv4Address" : "amf",
+						"transport" : "TCP",
+						"port" : 29518
+					}
+				],
+				"apiPrefix" : "http://amf:29518"
+				} ],
+				"nfInstanceId" : "9f7d5a3f-88ab-4525-b31e-334da7faedab",
+				"nfType" : "AMF",
+				"nfStatus" : "REGISTERED",
+				"plmnList" : [],
+				"sNssais" : [ { "sst" : 1, "sd" : "010203" } ],
+				"ipv4Addresses" : [ "amf" ], 
+				"amfInfo" : { 
+				"amfSetId" : "3f9",
+				"amfRegionId" : "ca",
+				"guamiList" : [ 
+					{ 
+						"plmnId" : { "mcc" : "208", "mnc" : "93" },
+						"amfId" : "cafe00" } ],
+				"taiList" : [ 
+					{ 
+						"plmnId" : { "mcc" : "208", "mnc" : "93" }, 
+						"tac" : "1"
+					} 
+				] 
+				} 
+				}`
 
 }
 
@@ -760,4 +1124,63 @@ func TestAusfMatchFilters(t *testing.T) {
 		t.Error("Unexpected nrfDbCallbackCallCount")
 	}
 	DisableNrfCaching()
+}
+
+func TestAmfMatchFilters(t *testing.T) {
+	evictionTimerVal := time.Duration(evictionInterval)
+	InitNrfCaching(evictionTimerVal*time.Second, nrfDbCallback)
+
+	param := Nnrf_NFDiscovery.SearchNFInstancesParamOpts{
+		TargetPlmnList: optional.NewInterface(util.MarshToJsonString([]models.PlmnId{{Mcc: "208", Mnc: "93"}, {Mcc: "209", Mnc: "94"}})),
+	}
+
+	expectedCallCount := nrfDbCallbackCallCount
+	expectedCallCount++
+
+	result, err := SearchNFInstances("testNrf", models.NfType_AMF, models.NfType_AMF, &param)
+
+	if err != nil {
+		t.Errorf("test failed, %s", err.Error())
+	}
+	if len(result.NfInstances) == 0 {
+		t.Error("nrf search did not return any records")
+	}
+	if expectedCallCount != nrfDbCallbackCallCount {
+		t.Error("Unexpected nrfDbCallbackCallCount")
+	}
+
+	param = Nnrf_NFDiscovery.SearchNFInstancesParamOpts{
+		TargetPlmnList: optional.NewInterface(util.MarshToJsonString([]models.PlmnId{{Mcc: "208", Mnc: "93"}})),
+		AmfRegionId:    optional.NewString("ca"),
+		AmfSetId:       optional.NewString("3f9"),
+	}
+
+	result, err = SearchNFInstances("testNrf", models.NfType_AMF, models.NfType_AMF, &param)
+
+	if err != nil {
+		t.Errorf("test failed, %s", err.Error())
+	}
+	if len(result.NfInstances) == 0 {
+		t.Error("nrf search did not return any records")
+	}
+	if expectedCallCount != nrfDbCallbackCallCount {
+		t.Error("Unexpected nrfDbCallbackCallCount")
+	}
+
+	param = Nnrf_NFDiscovery.SearchNFInstancesParamOpts{
+		AmfRegionId: optional.NewString("ca"),
+		AmfSetId:    optional.NewString("3f8"),
+	}
+
+	result, err = SearchNFInstances("testNrf", models.NfType_AMF, models.NfType_AMF, &param)
+
+	if err != nil {
+		t.Errorf("test failed, %s", err.Error())
+	}
+	if len(result.NfInstances) == 0 {
+		t.Error("nrf search did not return any records")
+	}
+	if expectedCallCount != nrfDbCallbackCallCount {
+		t.Error("Unexpected nrfDbCallbackCallCount")
+	}
 }

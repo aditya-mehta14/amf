@@ -147,69 +147,71 @@ func MatchAmfProfile(profile *models.NfProfile, opts *Nnrf_NFDiscovery.SearchNFI
 	matchFound := true
 
 	if opts.TargetPlmnList.IsSet() {
-		targetPlmnList := opts.TargetPlmnList.Value().([]string)
 
-		for _, targetPlmn := range targetPlmnList {
-			var plmn models.PlmnId
-			err := json.Unmarshal([]byte(targetPlmn), &plmn)
+		if profile.PlmnList != nil {
+			plmnMatchCount := 0
 
-			if err != nil {
-				return false
-			}
-
-			if profile.PlmnList != nil {
-				for _, profilePlmn := range *profile.PlmnList {
-					if profilePlmn == plmn {
-						matchFound = true
-					}
-				}
-			}
-		}
-	}
-	if matchFound && profile.AmfInfo != nil {
-		guamiFound := false
-		regionIdFound := false
-		setIdFound := false
-
-		if opts.Guami.IsSet() {
-			guamiList := opts.Guami.Value().([]string)
-
-			for _, guami := range guamiList {
-				var guamiOpt models.Guami
-				err := json.Unmarshal([]byte(guami), &guamiOpt)
+			targetPlmnList := opts.TargetPlmnList.Value().([]string)
+			for _, targetPlmn := range targetPlmnList {
+				var plmn models.PlmnId
+				err := json.Unmarshal([]byte(targetPlmn), &plmn)
 
 				if err != nil {
 					return false
 				}
 
-				if profile.AmfInfo.GuamiList != nil {
-					for _, guami := range *profile.AmfInfo.GuamiList {
-						if guamiOpt == guami {
-							guamiFound = true
-						}
+				for _, profilePlmn := range *profile.PlmnList {
+					if profilePlmn == plmn {
+						plmnMatchCount++
+						break
 					}
 				}
 			}
-			matchFound = guamiFound
+			matchFound = plmnMatchCount > 0
+		}
+	}
+
+	if matchFound && profile.AmfInfo != nil {
+
+		if opts.Guami.IsSet() {
+			if profile.AmfInfo.GuamiList != nil {
+				guamiMatchCount := 0
+
+				guamiList := opts.Guami.Value().([]string)
+				for _, guami := range guamiList {
+					var guamiOpt models.Guami
+					err := json.Unmarshal([]byte(guami), &guamiOpt)
+
+					if err != nil {
+						return false
+					}
+
+					for _, guami := range *profile.AmfInfo.GuamiList {
+						if guamiOpt == guami {
+							guamiMatchCount++
+							break
+						}
+					}
+				}
+				matchFound = guamiMatchCount > 0
+			}
 		}
 
 		if matchFound && opts.AmfRegionId.IsSet() {
 			if len(profile.AmfInfo.AmfRegionId) > 0 {
-				if profile.AmfInfo.AmfRegionId == opts.AmfRegionId.Value() {
-					regionIdFound = true
+				if profile.AmfInfo.AmfRegionId != opts.AmfRegionId.Value() {
+					matchFound = false
 				}
 			}
-			matchFound = regionIdFound
 		}
 
 		if matchFound && opts.AmfSetId.IsSet() {
 			if len(profile.AmfInfo.AmfSetId) > 0 {
-				if profile.AmfInfo.AmfSetId == opts.AmfSetId.Value() {
-					setIdFound = true
+				if profile.AmfInfo.AmfSetId != opts.AmfSetId.Value() {
+					matchFound = false
 				}
 			}
 		}
-		matchFound = setIdFound
 	}
 
 	logger.UtilLog.Infoln("Amf match found = %v", matchFound)
